@@ -1,5 +1,6 @@
 import { AWSError, SQS } from 'aws-sdk';
 import CreateQueuesInterface from './interfaces/create-queues.interface';
+import ListQueuesInterface from './interfaces/list-queues.interface';
 
 export default class SQSWrapper {
   private sqs: SQS;
@@ -59,5 +60,18 @@ export default class SQSWrapper {
     }
 
     return response.reverse();
+  }
+
+  async list(
+    params: ListQueuesInterface,
+  ): Promise<[AWSError, SQS.ListQueuesResult]> {
+    const { queueConfig } = params;
+    queueConfig.QueueNamePrefix = `${this.projectName}-webhook`;
+
+    return new Promise((resolve) => {
+      this.sqs.listQueues(queueConfig, (err, data) => {
+        resolve([err, data]);
+      });
+    });
   }
 }
