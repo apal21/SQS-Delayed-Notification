@@ -7,7 +7,8 @@
     "start": "tsc --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --ignore-path=.gitignore",
-    "lint:fix": "eslint \"{src,apps,libs,test}/**/*.ts\" --ignore-path=.gitignore --fix"
+    "lint:fix": "eslint \"{src,apps,libs,test}/**/*.ts\" --ignore-path=.gitignore --fix",
+    "prepare": "husky install"
   },
   "keywords": [
     "Amazon",
@@ -26,10 +27,15 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-prettier": "^3.4.0",
+    "husky": "^6.0.0",
+    "lint-staged": "^10.5.4",
     "prettier": "^2.2.1",
     "typescript": "^4.2.4"
   },
   "dependencies": {
     "aws-sdk": "^2.892.0"
+  },
+  "lint-staged": {
+    "*.ts": "eslint --cache --fix"
   }
 }
