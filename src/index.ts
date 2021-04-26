@@ -74,4 +74,28 @@ export default class SQSWrapper {
       });
     });
   }
+
+  async delete(): Promise<[AWSError, unknown][]> {
+    const response: [AWSError, unknown][] = [];
+    const [error, { QueueUrls }] = await this.list({
+      queueConfig: { QueueNamePrefix: `${this.projectName}-webhook` },
+    });
+
+    if (error) {
+      return [[error, null]];
+    }
+
+    for (let i = 0; i < (QueueUrls?.length || 0); i += 1) {
+      // eslint-disable-next-line no-await-in-loop
+      const result: [AWSError, unknown] = await new Promise((resolve) => {
+        if (QueueUrls) {
+          this.sqs.deleteQueue({ QueueUrl: QueueUrls[i] }, (err, data) => {
+            resolve([err, data]);
+          });
+        }
+      });
+      response.push(result);
+    }
+    return response;
+  }
 }
