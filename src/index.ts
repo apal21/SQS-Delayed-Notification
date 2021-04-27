@@ -9,7 +9,7 @@ export default class SQSWrapper {
 
   private awsAccountId: string;
 
-  private projectName: string;
+  private readonly projectName: string;
 
   constructor(projectName: string, awsConfig: SQS.ClientConfiguration) {
     this.awsConfig = awsConfig;
@@ -25,7 +25,7 @@ export default class SQSWrapper {
     const response: [AWSError, SQS.CreateQueueResult][] = [];
     // Update QueueName everywhere in queueConfig
     for (let i = queueConfig.length - 1; i >= 0; i -= 1) {
-      queueConfig[i].QueueName = `${this.projectName}-webhook-level-${i}`;
+      queueConfig[i].QueueName = `${this.projectName}-level-${i}`;
 
       // Add deadLetterTargetArn for everything except the last queue
       if (i !== queueConfig.length - 1) {
@@ -39,7 +39,7 @@ export default class SQSWrapper {
           ...redrivePolicy,
           deadLetterTargetArn: `arn:aws:sqs:${this.awsConfig.region}:${
             this.awsAccountId
-          }:${this.projectName}-webhook-level-${i + 1}`,
+          }:${this.projectName}-level-${i + 1}`,
         });
       }
 
@@ -66,7 +66,7 @@ export default class SQSWrapper {
     params: ListQueuesInterface,
   ): Promise<[AWSError, SQS.ListQueuesResult]> {
     const { queueConfig } = params;
-    queueConfig.QueueNamePrefix = `${this.projectName}-webhook`;
+    queueConfig.QueueNamePrefix = `${this.projectName}`;
 
     return new Promise((resolve) => {
       this.sqs.listQueues(queueConfig, (err, data) => {
@@ -78,7 +78,7 @@ export default class SQSWrapper {
   async delete(): Promise<[AWSError, unknown][]> {
     const response: [AWSError, unknown][] = [];
     const [error, { QueueUrls }] = await this.list({
-      queueConfig: { QueueNamePrefix: `${this.projectName}-webhook` },
+      queueConfig: { QueueNamePrefix: `${this.projectName}` },
     });
 
     if (error) {
