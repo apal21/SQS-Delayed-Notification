@@ -11,6 +11,8 @@ export default class SQSWrapper {
 
   private readonly projectName: string;
 
+  private queueUrls: string[] = [];
+
   constructor(projectName: string, awsConfig: SQS.ClientConfiguration) {
     this.awsConfig = awsConfig;
     this.awsAccountId = '';
@@ -70,6 +72,9 @@ export default class SQSWrapper {
 
     return new Promise((resolve) => {
       this.sqs.listQueues(queueConfig, (err, data) => {
+        if (data.QueueUrls) {
+          this.queueUrls = data.QueueUrls;
+        }
         resolve([err, data]);
       });
     });
@@ -97,5 +102,20 @@ export default class SQSWrapper {
       response.push(result);
     }
     return response;
+  }
+
+  async send(
+    params: SQS.SendMessageRequest,
+  ): Promise<[AWSError, SQS.SendMessageResult]> {
+    if (this.queueUrls.length === 0) {
+      await this.list({ queueConfig: {} });
+    }
+    // eslint-disable-next-line no-param-reassign,prefer-destructuring
+    params.QueueUrl = this.queueUrls.sort()[0];
+    return new Promise((resolve) => {
+      this.sqs.sendMessage(params, (err, data) => {
+        resolve([err, data]);
+      });
+    });
   }
 }
