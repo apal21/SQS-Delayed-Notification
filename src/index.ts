@@ -1,6 +1,7 @@
 import { AWSError, SQS } from 'aws-sdk';
 import CreateQueuesInterface from './interfaces/create-queues.interface';
 import ListQueuesInterface from './interfaces/list-queues.interface';
+import ReceiveMessageInterface from './interfaces/receive-message.interface';
 
 export default class SQSWrapper {
   private sqs: SQS;
@@ -129,6 +130,27 @@ export default class SQSWrapper {
     params.QueueUrl = this.queueUrls.sort()[0];
     return new Promise((resolve) => {
       this.sqs.sendMessageBatch(params, (err, data) => {
+        resolve([err, data]);
+      });
+    });
+  }
+
+  async receive(
+    params: ReceiveMessageInterface,
+  ): Promise<[AWSError, SQS.ReceiveMessageResult]> {
+    const { level, queueConfig } = params;
+
+    if (this.queueUrls.length === 0) {
+      await this.list({ queueConfig: {} });
+    }
+
+    // eslint-disable-next-line prefer-destructuring
+    queueConfig.QueueUrl = this.queueUrls.filter((url) =>
+      url.includes(`${this.projectName}-level-${level}`),
+    )[0];
+
+    return new Promise((resolve) => {
+      this.sqs.receiveMessage(queueConfig, (err, data) => {
         resolve([err, data]);
       });
     });
