@@ -118,4 +118,19 @@ export default class SQSWrapper {
       });
     });
   }
+
+  async sendBatch(
+    params: SQS.SendMessageBatchRequest,
+  ): Promise<[AWSError, SQS.SendMessageBatchResult]> {
+    if (this.queueUrls.length === 0) {
+      await this.list({ queueConfig: {} });
+    }
+    // eslint-disable-next-line no-param-reassign,prefer-destructuring
+    params.QueueUrl = this.queueUrls.sort()[0];
+    return new Promise((resolve) => {
+      this.sqs.sendMessageBatch(params, (err, data) => {
+        resolve([err, data]);
+      });
+    });
+  }
 }
