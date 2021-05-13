@@ -148,7 +148,10 @@ export default class SQSWrapper {
       SQS.ReceiveMessageResult,
       (
         ReceiptHandle: string | [],
-        callback: (error: AWSError, response: unknown) => void,
+        callback: (
+          error: AWSError,
+          response: SQS.DeleteMessageBatchResult | unknown,
+        ) => void,
       ) => void,
     ]
   > {
@@ -167,7 +170,10 @@ export default class SQSWrapper {
       this.sqs.receiveMessage(queueConfig, (err, data) => {
         const acknowledge = (
           ReceiptHandle: string | [],
-          callback: (error: AWSError, response: unknown) => void,
+          callback: (
+            error: AWSError,
+            response: SQS.DeleteMessageBatchResult | unknown,
+          ) => void,
         ) => {
           if (typeof ReceiptHandle === 'string') {
             this.sqs.deleteMessage(
