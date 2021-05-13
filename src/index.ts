@@ -137,7 +137,16 @@ export default class SQSWrapper {
 
   async receive(
     params: ReceiveMessageInterface,
-  ): Promise<[AWSError, SQS.ReceiveMessageResult]> {
+  ): Promise<
+    [
+      AWSError,
+      SQS.ReceiveMessageResult,
+      (
+        ReceiptHandle: string | [],
+        callback: (error: AWSError, response: unknown) => void,
+      ) => void,
+    ]
+  > {
     const { level, queueConfig } = params;
 
     if (this.queueUrls.length === 0) {
@@ -151,7 +160,23 @@ export default class SQSWrapper {
 
     return new Promise((resolve) => {
       this.sqs.receiveMessage(queueConfig, (err, data) => {
-        resolve([err, data]);
+        const acknowledge = (
+          ReceiptHandle: string | [],
+          callback: (error: AWSError, response: unknown) => void,
+        ) => {
+          if (typeof ReceiptHandle === 'string') {
+            this.sqs.deleteMessage(
+              { QueueUrl: queueConfig.QueueUrl, ReceiptHandle },
+              callback,
+            );
+          } else if (Array.isArray(ReceiptHandle)) {
+            this.sqs.deleteMessageBatch({
+              QueueUrl: queueConfig.QueueUrl,
+              Entries: ReceiptHandle,
+            });
+          }
+        };
+        resolve([err, data, acknowledge]);
       });
     });
   }
