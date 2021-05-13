@@ -73,7 +73,7 @@ export default class SQSWrapper {
   async list(
     params: ListQueuesInterface,
   ): Promise<[AWSError, SQS.ListQueuesResult]> {
-    const { queueConfig } = params;
+    const { queueConfig = {} } = params;
     queueConfig.QueueNamePrefix = `${this.projectName}`;
 
     return new Promise((resolve) => {
