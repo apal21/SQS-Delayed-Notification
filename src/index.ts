@@ -29,6 +29,9 @@ export default class SQSWrapper {
     // Update QueueName everywhere in queueConfig
     for (let i = queueConfig.length - 1; i >= 0; i -= 1) {
       queueConfig[i].QueueName = `${this.projectName}-level-${i}`;
+      if (queueConfig[i]?.Attributes?.FifoQueue) {
+        queueConfig[i].QueueName = `${queueConfig[i].QueueName}.fifo`;
+      }
 
       // Add deadLetterTargetArn for everything except the last queue
       if (i !== queueConfig.length - 1) {
@@ -42,7 +45,9 @@ export default class SQSWrapper {
           ...redrivePolicy,
           deadLetterTargetArn: `arn:aws:sqs:${this.awsConfig.region}:${
             this.awsAccountId
-          }:${this.projectName}-level-${i + 1}`,
+          }:${this.projectName}-level-${i + 1}${
+            queueConfig[i]?.Attributes?.FifoQueue ? '.fifo' : ''
+          }`,
         });
       }
 
