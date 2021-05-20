@@ -8,7 +8,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --ignore-path=.gitignore",
     "lint:fix": "eslint \"{src,apps,libs,test}/**/*.ts\" --ignore-path=.gitignore --fix",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "build": "tsc",
+    "prepublish": "npm run build"
   },
   "keywords": [
     "Amazon",
